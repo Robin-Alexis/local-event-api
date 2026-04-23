@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: fastify_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: fastify
+      POSTGRES_PASSWORD: fastifypassword
+      POSTGRES_DB: fastifydb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    container_name: fastify_adminer
+    restart: always
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:

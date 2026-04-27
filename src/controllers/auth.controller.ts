@@ -11,6 +11,6 @@ export async function register(request: FastifyRequest, reply: FastifyReply) {
 export async function login(request: FastifyRequest, reply: FastifyReply) {
   const data = loginSchema.parse(request.body);
   const user = await authService.loginUser(data);
-  const token = request.server.jwt.sign({ id: user.id, email: user.email });
+  const token = request.server.jwt.sign({ id: user.id, email: user.email, role: user.role });
   return reply.send({ token });
 }

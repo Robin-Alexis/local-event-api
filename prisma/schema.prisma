@@ -26,6 +26,7 @@ model User {
   firstName String?
   lastName String?
   identifyCard String?
+  role Role @default(USER)
 
   events Event[]
   historics Historic[]
@@ -35,6 +36,11 @@ model User {
 
   conversationsSent     Conversation[] @relation("User1")
   conversationsReceived Conversation[] @relation("User2")
+}
+
+enum Role {
+  USER
+  ADMIN
 }
 
 model Event {

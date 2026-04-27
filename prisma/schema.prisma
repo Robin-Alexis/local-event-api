@@ -12,3 +12,119 @@ model Post {
   content   String?
   createdAt DateTime @default(now())
 }
+
+
+model User {
+  id  Int @id @default(autoincrement())
+  name String
+  email String @unique
+  password String
+  createAt DateTime @default(now())
+  location String?
+  maxDistace Int?
+  position String?
+  firstName String?
+  lastName String?
+  identifyCard String?
+
+  events Event[]
+  historics Historic[]
+  participations Participation[]
+  evaluations Evaluation[]
+  preferences Preference[]
+
+  conversationsSent     Conversation[] @relation("User1")
+  conversationsReceived Conversation[] @relation("User2")
+}
+
+model Event {
+  id Int @id @default(autoincrement())
+  title String
+  description String
+  eventDate DateTime
+  location String?
+  createdAt DateTime @default(now())
+  maxParticipants Int
+  position String?
+
+  organizer       User      @relation(fields: [userId], references: [id])
+  userId          Int       @map("User_id")
+
+  category        Category  @relation(fields: [categoryId], references: [id])
+  categoryId     Int       @map("Category_id")
+
+  historics Historic[]
+  participations Participation[]
+  evaluations Evaluation[]
+}
+
+model Category {
+  id Int @id @default(autoincrement())
+  name String
+  description String
+
+  parentId  Int?          @map("Category_id")
+  parent    Category?     @relation("SubCategories", fields: [parentId], references: [id])
+  children  Category[]    @relation("SubCategories")
+
+  events Event[]
+  preferences Preference[]
+}
+
+model Conversation {
+  id Int @id @default(autoincrement())
+  message String
+  dateC DateTime @default(now())
+  user1Id Int
+  user2Id Int
+
+  user1 User @relation("User1", fields: [user1Id], references: [id])
+  user2 User @relation("User2", fields: [user2Id], references: [id])
+
+}
+
+
+model Historic {
+  id Int @id @default(autoincrement())
+  opAt DateTime @default(now())
+  opType String
+
+  user User @relation(fields: [userId], references: [id])
+  userId Int @map("User_id")
+
+  event Event @relation(fields: [eventId], references: [id])
+  eventId Int @map("Event_id")
+}
+
+model Participation {
+  id Int @id @default(autoincrement())
+  user User @relation(fields: [userId], references: [id])
+  userId Int @map("User_id")
+
+  event Event @relation(fields: [eventId], references: [id])
+  eventId Int @map("Event_id")
+
+  @@unique([userId, eventId]) // On empeche un utilisateur de participer 2 fois au même event
+}
+
+model Evaluation {
+  id Int @id @default(autoincrement())
+  note Int
+  comment String?
+
+  user User @relation(fields: [userId], references: [id])
+  userId Int @map("User_id")
+
+  event Event @relation(fields: [eventId], references: [id])
+  eventId Int @map("Event_id")
+}
+
+model Preference {
+  id Int @id @default(autoincrement())
+
+  user User @relation(fields: [userId], references: [id])
+  userId Int @map("User_id")
+
+  category Category @relation(fields: [categoryId], references: [id])
+  categoryId Int @map("Category_id")
+}

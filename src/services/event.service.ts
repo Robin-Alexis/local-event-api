@@ -1,0 +1,123 @@
+import { prisma } from "../prisma";
+import { AppError } from "../errors/AppError";
+import { userSelect } from "../dto/user.dto";
+
+export async function getEvents(filters: {
+  categoryId?: number;
+  location?: string;
+  from?: Date;
+  to?: Date;
+}) {
+  return prisma.event.findMany({
+    where: {
+      ...(filters.categoryId && { categoryId: filters.categoryId }),
+      ...(filters.location && {
+        location: { contains: filters.location, mode: "insensitive" },
+      }),
+      ...(filters.from || filters.to
+        ? {
+            eventDate: {
+              ...(filters.from && { gte: filters.from }),
+              ...(filters.to && { lte: filters.to }),
+            },
+          }
+        : {}),
+    },
+    include: { category: true, organizer: { select: userSelect } },
+  });
+}
+
+export async function getEventById(id: number) {
+  const event = await prisma.event.findUnique({
+    where: { id },
+    include: { category: true, organizer: { select: userSelect }, participations: true },
+  });
+  if (!event) throw new AppError("Event not found", 404);
+  return event;
+}
+
+export async function createEvent(
+  userId: number,
+  data: {
+    title: string;
+    description: string;
+    eventDate: Date;
+    location?: string;
+    maxParticipants: number;
+    categoryId: number;
+  },
+) {
+  return prisma.event.create({
+    data: {
+      ...data,
+      userId: userId,
+    },
+  });
+}
+
+export async function updateEvent(id: number, userId: number, data: any) {
+  const event = await prisma.event.findUnique({ where: { id } });
+  if (!event) throw new AppError("Event not found", 404);
+  if (event.userId !== userId) throw new AppError("Not your event", 403);
+
+  return prisma.event.update({
+    where: { id },
+    data,
+  });
+}
+
+export async function deleteEvent(id: number, userId: number) {
+  const event = await prisma.event.findUnique({ where: { id } });
+  if (!event) throw new AppError("Event not found", 404);
+  if (event.userId !== userId) throw new AppError("Not your event", 403);
+  return prisma.event.delete({
+    where: { id },
+  });
+}
+
+export async function getMyEvents(userId: number) {
+  return prisma.event.findMany({
+    where: { userId },
+    include: { category: true, organizer: { select: userSelect }, participations: true },
+  });
+}
+
+export async function joinEvent(eventId: number, userId: number) {
+  const event = await prisma.event.findUnique({
+    where: { id: eventId },
+    include: { participations: true },
+  });
+  if (!event) throw new AppError("Event not found", 404);
+  if (event.participations.length >= event.maxParticipants) { 
+    throw new AppError("Event is full", 400);
+  }
+
+  const alreadyIn = await prisma.participation.findUnique({
+    where: { userId_eventId: { userId, eventId } },
+  });
+  if (alreadyIn) throw new AppError("Already registered", 409);
+
+  return prisma.participation.create({ data: { userId, eventId } });
+}
+
+export async function leaveEvent(eventId: number, userId: number) {
+    const participation = await prisma.participation.findUnique({
+        where: { userId_eventId: { userId, eventId } },
+    });
+    if (!participation) throw new AppError("Not registered", 404);
+
+    return prisma.participation.delete({
+        where: { userId_eventId: { userId, eventId } },
+    });
+}
+
+export async function getRegisteredEvents(userId: number) {
+  return prisma.participation.findMany({
+    where: { userId },
+    include: {
+      event: {
+        include: { category: true, organizer: { select: userSelect } }
+      }
+    }
+  })
+}

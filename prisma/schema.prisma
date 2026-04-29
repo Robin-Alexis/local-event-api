@@ -38,6 +38,7 @@ model User {
   conversationsReceived Conversation[] @relation("User2")
 
   refreshTokens RefreshToken[]
+  messages Message[]
 }
 
 enum Role {
@@ -90,17 +91,28 @@ model Category {
 }
 
 model Conversation {
-  id Int @id @default(autoincrement())
-  message String
-  dateC DateTime @default(now())
-  user1Id Int
-  user2Id Int
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  user1Id   Int
+  user2Id   Int
 
-  user1 User @relation("User1", fields: [user1Id], references: [id])
-  user2 User @relation("User2", fields: [user2Id], references: [id])
+  user1    User      @relation("User1", fields: [user1Id], references: [id])
+  user2    User      @relation("User2", fields: [user2Id], references: [id])
+  messages Message[]
 
+  @@unique([user1Id, user2Id])
 }
 
+model Message {
+  id             Int          @id @default(autoincrement())
+  content        String
+  createdAt      DateTime     @default(now())
+  conversationId Int
+  senderId       Int
+
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+  sender       User         @relation(fields: [senderId], references: [id])
+}
 
 model Historic {
   id Int @id @default(autoincrement())

@@ -6,7 +6,7 @@ export async function createEvaluation(userId: number, eventId: number, data: {
     comment?: string
 }) {
     const event = await prisma.event.findUnique({ where : { id: eventId}})
-    if (!event) throw new AppError("Event not found", 404)
+    if (!event) throw new AppError("Événement non trouvé", 404)
 
     const participation = await prisma.participation.findUnique({
         where: { userId_eventId: { userId, eventId }}
@@ -25,7 +25,7 @@ export async function createEvaluation(userId: number, eventId: number, data: {
 
 export async function getEventEvaluations(eventId: number) {
   const event = await prisma.event.findUnique({ where: { id: eventId } })
-  if (!event) throw new AppError("Event not found", 404)
+  if (!event) throw new AppError("Événement non trouvé", 404)
 
   return prisma.evaluation.findMany({
     where: { eventId },
@@ -35,8 +35,8 @@ export async function getEventEvaluations(eventId: number) {
 
 export async function deleteEvaluation(id: number, userId: number) {
   const evaluation = await prisma.evaluation.findUnique({ where: { id } })
-  if (!evaluation) throw new AppError("Evaluation not found", 404)
-  if (evaluation.userId !== userId) throw new AppError("Not your evaluation", 403)
+  if (!evaluation) throw new AppError("Note non trouvé", 404)
+  if (evaluation.userId !== userId) throw new AppError("Pas votre note", 403)
 
   return prisma.evaluation.delete({ where: { id } })
 }

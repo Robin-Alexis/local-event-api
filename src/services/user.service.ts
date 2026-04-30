@@ -8,7 +8,7 @@ export async function getUsers() {
 
 export async function getUserById(id: number) {
   const user = await prisma.user.findUnique({ where: { id }, select: userSelect })
-  if (!user) throw new AppError("User not found", 404)
+  if (!user) throw new AppError("L'utilisateur n'existe pas", 404)
   return user
 }
 

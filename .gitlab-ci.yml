@@ -1,6 +1,16 @@
 stages:
+  - test
   - build
   - deploy
+
+test:
+  stage: test
+  image: node:20
+  script:
+    - npm ci
+    - npm test
+  only:
+    - main
 
 build:
   stage: build

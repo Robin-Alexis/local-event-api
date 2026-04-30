@@ -6,7 +6,7 @@ export async function createEvaluation(userId: number, eventId: number, data: {
     comment?: string
 }) {
     const event = await prisma.event.findUnique({ where : { id: eventId}})
-    if (!event) throw new AppError("Event not found", 404)
+    if (!event) throw new AppError("Événement non trouvé", 404)
 
     const participation = await prisma.participation.findUnique({
         where: { userId_eventId: { userId, eventId }}
@@ -25,7 +25,7 @@ export async function createEvaluation(userId: number, eventId: number, data: {
 
 export async function getEventEvaluations(eventId: number) {
   const event = await prisma.event.findUnique({ where: { id: eventId } })
-  if (!event) throw new AppError("Event not found", 404)
+  if (!event) throw new AppError("Événement non trouvé", 404)
 
   return prisma.evaluation.findMany({
     where: { eventId },

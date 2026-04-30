@@ -19,7 +19,7 @@ export async function addPreferences(userId: number, categoryIds: number[]) {
   const existing = await prisma.preference.findMany({
     where: { userId, categoryId: { in: categoryIds } }
   })
-  const existingIds = existing.map(p => p.categoryId)
+  const existingIds = existing.map((p: { categoryId: number }) => p.categoryId)
   const newIds = categoryIds.filter(id => !existingIds.includes(id))
 
   if (newIds.length === 0) throw new AppError("Toutes les préférences existe déjà", 409)

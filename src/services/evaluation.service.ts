@@ -35,8 +35,8 @@ export async function getEventEvaluations(eventId: number) {
 
 export async function deleteEvaluation(id: number, userId: number) {
   const evaluation = await prisma.evaluation.findUnique({ where: { id } })
-  if (!evaluation) throw new AppError("Evaluation not found", 404)
-  if (evaluation.userId !== userId) throw new AppError("Not your evaluation", 403)
+  if (!evaluation) throw new AppError("Note non trouvé", 404)
+  if (evaluation.userId !== userId) throw new AppError("Pas votre note", 403)
 
   return prisma.evaluation.delete({ where: { id } })
 }

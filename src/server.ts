@@ -7,11 +7,16 @@ import jwtPlugin from "./plugins/jwt";
 import { errorHandler } from "./plugins/errorHandler";
 import { evaluationRoutes } from "./routes/evaluation.routes";
 import { conversationRoutes } from "./routes/conversation.routes";
+import scalarPlugin from "./plugins/scalar";
+import swaggerPlugin from "./plugins/swagger";
 
 const app = Fastify({ logger: true });
 
+app.register(swaggerPlugin);
+app.register(scalarPlugin);
 app.register(jwtPlugin);
 app.register(errorHandler);
+
 app.register(userRoutes);
 app.register(authRoutes);
 app.register(eventRoutes);

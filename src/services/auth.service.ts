@@ -12,7 +12,7 @@ export async function registerUser(data: {
     where: { email: data.email }
   });
 
-  if (existing) throw new AppError("Email already used", 409);
+  if (existing) throw new AppError("L'email existe déjà", 409);
 
   const hashed = await bcrypt.hash(data.password, 10);
 

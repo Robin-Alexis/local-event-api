@@ -276,4 +276,4 @@ Variables CI/CD requises :
 
 Projet réalisé dans le cadre de la **Licence STS parcours Développement** au CNAM.
 
-**Alexis Robin** & **Bocquet** — 2026
+**Alexis Robin** & **Bocquet Mathéo** — 2026

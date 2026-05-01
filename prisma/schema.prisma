@@ -81,6 +81,7 @@ model Category {
   id Int @id @default(autoincrement())
   name String
   description String
+  deletedAt   DateTime?
 
   parentId  Int?          @map("Category_id")
   parent    Category?     @relation("SubCategories", fields: [parentId], references: [id])

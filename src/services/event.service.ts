@@ -1,6 +1,7 @@
 import { prisma } from "../prisma";
 import { AppError } from "../errors/AppError";
 import { userSelect } from "../dto/user.dto";
+import { addHistoric } from "./historic.service";
 
 export async function getEvents(filters: {
   categoryId?: number;
@@ -47,12 +48,11 @@ export async function createEvent(
     categoryId: number;
   },
 ) {
-  return prisma.event.create({
-    data: {
-      ...data,
-      userId: userId,
-    },
+  const event = await prisma.event.create({
+    data: { ...data, userId }
   });
+  await addHistoric(userId, event.id, "CREATE");
+  return event;
 }
 
 export async function updateEvent(id: number, userId: number, data: any) {
@@ -60,19 +60,18 @@ export async function updateEvent(id: number, userId: number, data: any) {
   if (!event) throw new AppError("Événement non trouvé", 404);
   if (event.userId !== userId) throw new AppError("Pas votre événement", 403);
 
-  return prisma.event.update({
-    where: { id },
-    data,
-  });
+  const updated = await prisma.event.update({ where: { id }, data });
+  await addHistoric(userId, id, "UPDATE");
+  return updated;
 }
 
 export async function deleteEvent(id: number, userId: number) {
   const event = await prisma.event.findUnique({ where: { id } });
   if (!event) throw new AppError("Événement non trouvé", 404);
   if (event.userId !== userId) throw new AppError("Pas votre événement", 403);
-  return prisma.event.delete({
-    where: { id },
-  });
+
+  await addHistoric(userId, id, "DELETE");
+  return prisma.event.delete({ where: { id } });
 }
 
 export async function getMyEvents(userId: number) {
@@ -88,7 +87,7 @@ export async function joinEvent(eventId: number, userId: number) {
     include: { participations: true },
   });
   if (!event) throw new AppError("Événement non trouvé", 404);
-  if (event.participations.length >= event.maxParticipants) { 
+  if (event.participations.length >= event.maxParticipants) {
     throw new AppError("L'événement est plein", 400);
   }
 
@@ -97,18 +96,22 @@ export async function joinEvent(eventId: number, userId: number) {
   });
   if (alreadyIn) throw new AppError("Déjà enregistrer", 409);
 
-  return prisma.participation.create({ data: { userId, eventId } });
+  const participation = await prisma.participation.create({ data: { userId, eventId } });
+  await addHistoric(userId, eventId, "JOIN");
+  return participation;
 }
 
 export async function leaveEvent(eventId: number, userId: number) {
-    const participation = await prisma.participation.findUnique({
-        where: { userId_eventId: { userId, eventId } },
-    });
-    if (!participation) throw new AppError("Non enregistrer", 404);
+  const participation = await prisma.participation.findUnique({
+    where: { userId_eventId: { userId, eventId } },
+  });
+  if (!participation) throw new AppError("Non enregistrer", 404);
 
-    return prisma.participation.delete({
-        where: { userId_eventId: { userId, eventId } },
-    });
+  const deleted = await prisma.participation.delete({
+    where: { userId_eventId: { userId, eventId } },
+  });
+  await addHistoric(userId, eventId, "LEAVE");
+  return deleted;
 }
 
 export async function getRegisteredEvents(userId: number) {
@@ -119,5 +122,5 @@ export async function getRegisteredEvents(userId: number) {
         include: { category: true, organizer: { select: userSelect } }
       }
     }
-  })
+  });
 }

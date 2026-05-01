@@ -10,6 +10,7 @@ import { conversationRoutes } from "./routes/conversation.routes";
 import scalarPlugin from "./plugins/scalar";
 import swaggerPlugin from "./plugins/swagger";
 import { preferenceRoutes } from "./routes/preference.routes";
+import { historicRoutes } from "./routes/historic.routes";
 
 const app = Fastify({ logger: true });
 
@@ -24,6 +25,7 @@ app.register(eventRoutes);
 app.register(evaluationRoutes);
 app.register(conversationRoutes);
 app.register(preferenceRoutes);
+app.register(historicRoutes);
 
 app.listen({ port: 3000, host: '0.0.0.0' }, () => {
   console.log("Server running on http://localhost:3000");

@@ -11,7 +11,6 @@ import {
 } from "../services/event.service";
 import { AppError } from "../errors/AppError";
 import { prisma } from "../prisma";
-import { title } from "node:process";
 
 jest.mock("../prisma", () => ({
   prisma: {
@@ -28,15 +27,22 @@ jest.mock("../prisma", () => ({
       create: jest.fn(),
       delete: jest.fn(),
     },
+    historic: {
+      create: jest.fn()
+    }
   },
 }));
+
+jest.mock("../services/historic.service", () => ({
+  addHistoric: jest.fn()
+}))
 
 const mockEvent = {
   id: 1,
   title: "Hackathon Web3",
   description: "Compétition de développement autour de la blockchain",
   eventDate: new Date("2026-04-30"),
-  localtion: "Caen",
+  location: "Caen",
   createdAt: new Date(),
   maxParticipants: 60,
   position: null,
@@ -133,11 +139,11 @@ describe("EventService", () => {
 
   describe("updateEvent", () => {
     it("Doit modifier l'événement du créateur", async () => {
-        ;(prisma.event.findUnique as jest.Mock).mockResolvedValue(mockEvent)
-        ;(prisma.event.update as jest.Mock).mockResolvedValue({ ...mockEvent, title: "Modifié"})
+      ;(prisma.event.findUnique as jest.Mock).mockResolvedValue(mockEvent)
+      ;(prisma.event.update as jest.Mock).mockResolvedValue({ ...mockEvent, title: "Modifié" })
 
-        const result = await updateEvent(1, 1, { title: "Modifié"})
-        expect(result.title).toBe("Modifié")
+      const result = await updateEvent(1, 1, { title: "Modifié" })
+      expect(result.title).toBe("Modifié")
     })
 
     it("Doit retourner une erreur si l'événement n'existe pas", async () => {
@@ -147,7 +153,7 @@ describe("EventService", () => {
         .rejects.toThrow(new AppError("Événement non trouvé", 404))
     })
 
-    it("Doit retourner une erreur si la personnen n'est pas le créateur", async () => {
+    it("Doit retourner une erreur si la personne n'est pas le créateur", async () => {
       ;(prisma.event.findUnique as jest.Mock).mockResolvedValue(mockEvent)
 
       await expect(updateEvent(1, 99, { title: "Modifié" }))
@@ -231,7 +237,7 @@ describe("EventService", () => {
       expect(prisma.participation.delete).toHaveBeenCalled()
     })
 
-    it("Doit retourner une erreur si l'utilisateur n'est pas enregistrer", async () => {
+    it("Doit retourner une erreur si l'utilisateur n'est pas enregistré", async () => {
       ;(prisma.participation.findUnique as jest.Mock).mockResolvedValue(null)
 
       await expect(leaveEvent(1, 2))
